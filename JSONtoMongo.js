@@ -13,6 +13,8 @@ var fs = require('fs'),
 //see https://mongoosejs.com/docs/connections.html
 //See https://docs.atlas.mongodb.com/driver-connection/
 
+mongoose.connect(config.db.uri, { useNewUrlParser: true });
+
 /* 
   Instantiate a mongoose model for each listing object in the JSON file, 
   and then save it to your Mongo database 
@@ -20,6 +22,42 @@ var fs = require('fs'),
 
   Remember that we needed to read in a file like we did in Bootcamp Assignment #1.
  */
+let listingData;
+fs.readFile('listings.json', 'utf8', function(err, data) {
+  /*
+    This callback function should save the data in the listingData variable, 
+    then start the server. 
+
+    HINT: Check out this resource on fs.readFile
+    //https://nodejs.org/api/fs.html#fs_fs_readfile_path_options_callback
+
+    HINT: Read up on JSON parsing Node.js
+  */
+
+  //Check for errors
+  if(err){
+    console.log('Error reading listings.json.\nError:', err);
+    throw err;
+  }
+
+  //Save the state in the listingData variable already defined
+  listingData = JSON.parse(data);
+
+  let saved = 0;
+  listingData.entries.forEach(listing => {
+    let newListing = new Listing(listing);
+
+    newListing.save(err => {
+      if(err) {
+        console.log('Saving listing UNSUCCESSFUL');
+        throw err;
+      }
+      saved++;
+      console.log('A new listing saved successfully!', saved+'/'+listingData.entries.length);
+    });
+  });
+
+});
 
 
 /*  
